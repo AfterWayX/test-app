@@ -1,25 +1,34 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from 'react';
+import styled from '@emotion/styled'
 
-function App() {
+import FirstPage from './pages/FirstPage';
+import { getDatabase, ref , onValue } from "firebase/database";
+
+ function App({app}:any) {
+  const [data, setData] = useState<string[]>([])
+  const database = getDatabase(app);
+  useEffect(() => {
+    async function getDates() {
+      const dbRef = ref(database, 'names');
+      onValue(dbRef, (snapshot) => {
+        let dates: string[] = []
+        snapshot.forEach((childSnapshot) => {
+          dates.push(childSnapshot.val())
+        });
+        return setData(dates!)
+      }, {
+        onlyOnce: true
+      });
+    }
+    getDates()
+    return () => {
+    }
+  }, [])
+ 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <section>
+      {data.length > 1 && <FirstPage names={data}/>}
+    </section>
   );
 }
 
